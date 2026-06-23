@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { openExternalPath } from "@/lib/tauri";
 import { useWorkspaceStore } from "@/store/workspace";
 import { useSettingsStore } from "@/store/settings";
 import { usePreviewStore } from "@/store/preview";
 import { useSidebarStore } from "@/store/sidebar";
+import { ShareDialog } from "@/components/share-dialog";
 
 export function TopBar() {
   const root = useWorkspaceStore((s) => s.root);
@@ -14,6 +16,9 @@ export function TopBar() {
   const bumpReload = usePreviewStore((s) => s.bumpReload);
   const sidebarCollapsed = useSidebarStore((s) => s.collapsed);
   const toggleSidebar = useSidebarStore((s) => s.toggleCollapsed);
+  const [shareOpen, setShareOpen] = useState(false);
+
+  const fileName = selectedFile?.split("/").pop() ?? "";
 
   async function pickFolder() {
     const picked = await openDialog({ directory: true, multiple: false });
@@ -69,7 +74,7 @@ export function TopBar() {
 
       <div className="flex-1" />
 
-      <div className="flex items-center gap-2">
+      <div className="relative flex items-center gap-2">
         {root && (
           <div className="flex items-center gap-1.5 px-2 font-mono text-[11px] uppercase tracking-wider text-accent">
             <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_rgb(var(--accent))]" />
@@ -111,6 +116,13 @@ export function TopBar() {
             >
               <ExternalIcon />
             </IconButton>
+            <IconButton
+              onClick={() => setShareOpen((v) => !v)}
+              title="Share artifact"
+              label="Share artifact"
+            >
+              <ShareIcon />
+            </IconButton>
           </>
         )}
         <IconButton
@@ -120,6 +132,15 @@ export function TopBar() {
         >
           <FolderIcon />
         </IconButton>
+
+        {shareOpen && root && selectedFile && (
+          <ShareDialog
+            root={root}
+            filePath={selectedFile}
+            fileName={fileName}
+            onClose={() => setShareOpen(false)}
+          />
+        )}
       </div>
     </div>
   );
@@ -178,6 +199,22 @@ function ExternalIcon() {
         strokeWidth="1.4"
         strokeLinecap="round"
         strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg className="h-3.5 w-3.5" viewBox="0 0 14 14" fill="none">
+      <circle cx="11" cy="3" r="1.6" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="3" cy="7" r="1.6" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="11" cy="11" r="1.6" stroke="currentColor" strokeWidth="1.3" />
+      <path
+        d="M9.6 3.8 4.4 6.2M4.4 7.8l5.2 2.4"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
       />
     </svg>
   );

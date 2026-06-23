@@ -32,6 +32,8 @@ pub fn run() {
             commands::preview::show_preview,
             commands::preview::update_preview_bounds,
             commands::search::search_workspace,
+            commands::share::share_artifact,
+            commands::share::get_share_status,
             commands::system::reveal_in_finder,
             commands::system::open_external,
         ])

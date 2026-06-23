@@ -2,6 +2,8 @@ import { invoke } from "@tauri-apps/api/core";
 import type {
   DirEntry,
   SearchResults,
+  ShareResult,
+  ShareStatus,
   StartupBundle,
   TrustMode,
   WorkspaceTree,
@@ -62,6 +64,21 @@ export function searchWorkspace(
   caseSensitive = false,
 ): Promise<SearchResults> {
   return invoke("search_workspace", { root, query, caseSensitive });
+}
+
+export function shareArtifact(
+  root: string,
+  path: string,
+  message?: string,
+): Promise<ShareResult> {
+  return invoke("share_artifact", { root, path, message: message ?? null });
+}
+
+export function getShareStatus(
+  root: string,
+  path: string,
+): Promise<ShareStatus | null> {
+  return invoke("get_share_status", { root, path });
 }
 
 /** Build a `htmlartifact://` URL for a file in the active workspace. */

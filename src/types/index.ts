@@ -50,3 +50,16 @@ export interface SearchResults {
   matches: SearchMatch[];
   truncated: boolean;
 }
+
+export interface ShareResult {
+  docId: string;
+  url: string;
+  version: number;
+  /** true when a new version was pushed to an already-shared file. */
+  updated: boolean;
+}
+
+export interface ShareStatus {
+  docId: string;
+  url: string;
+}
