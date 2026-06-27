@@ -1,6 +1,6 @@
 [package]
 name = "htmlbrowser-dev"
-version = "0.1.6"
+version = "0.1.7"
 description = "Local-first viewer for AI-generated HTML artifacts"
 authors = ["maail"]
 edition = "2021"
