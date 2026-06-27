@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
-import { openExternalPath } from "@/lib/tauri";
+import { revealInFinder } from "@/lib/tauri";
 import { useWorkspaceStore } from "@/store/workspace";
 import { useSettingsStore } from "@/store/settings";
 import { usePreviewStore } from "@/store/preview";
@@ -14,11 +14,20 @@ export function TopBar() {
   const trustMode = useSettingsStore((s) => s.trustMode);
   const setTrustMode = useSettingsStore((s) => s.setTrustMode);
   const bumpReload = usePreviewStore((s) => s.bumpReload);
+  const setOverlayOpen = usePreviewStore((s) => s.setOverlayOpen);
   const sidebarCollapsed = useSidebarStore((s) => s.collapsed);
   const toggleSidebar = useSidebarStore((s) => s.toggleCollapsed);
   const [shareOpen, setShareOpen] = useState(false);
 
   const fileName = selectedFile?.split("/").pop() ?? "";
+  const shareVisible = shareOpen && !!root && !!selectedFile;
+
+  // Hide the native preview webview while the share popover is open so the
+  // popover (a DOM element) isn't painted behind it.
+  useEffect(() => {
+    setOverlayOpen(shareVisible);
+    return () => setOverlayOpen(false);
+  }, [shareVisible, setOverlayOpen]);
 
   async function pickFolder() {
     const picked = await openDialog({ directory: true, multiple: false });
@@ -33,12 +42,12 @@ export function TopBar() {
     bumpReload();
   }
 
-  async function openExternal() {
+  async function revealFile() {
     if (!selectedFile) return;
     try {
-      await openExternalPath(selectedFile);
+      await revealInFinder(selectedFile);
     } catch (err) {
-      console.error("openExternal failed:", err);
+      console.error("revealInFinder failed:", err);
     }
   }
 
@@ -110,11 +119,11 @@ export function TopBar() {
               <ReloadIcon />
             </IconButton>
             <IconButton
-              onClick={openExternal}
-              title="Open in default browser"
-              label="Open externally"
+              onClick={revealFile}
+              title="Reveal in Finder"
+              label="Reveal in Finder"
             >
-              <ExternalIcon />
+              <RevealIcon />
             </IconButton>
             <IconButton
               onClick={() => setShareOpen((v) => !v)}
@@ -190,15 +199,21 @@ function ReloadIcon() {
   );
 }
 
-function ExternalIcon() {
+function RevealIcon() {
   return (
     <svg className="h-3.5 w-3.5" viewBox="0 0 14 14" fill="none">
       <path
-        d="M5 3H3v8h8V9M8 3h3v3M11 3 6 8"
+        d="M1.5 4A1 1 0 0 1 2.5 3h2.382a1 1 0 0 1 .707.293l.618.618A1 1 0 0 0 6.914 4.2H11a1 1 0 0 1 1 1v2"
         stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
+        strokeWidth="1.3"
         strokeLinejoin="round"
+      />
+      <circle cx="8.5" cy="9" r="2.2" stroke="currentColor" strokeWidth="1.3" />
+      <path
+        d="m10.2 10.7 1.6 1.6"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
       />
     </svg>
   );

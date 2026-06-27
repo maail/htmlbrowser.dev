@@ -17,6 +17,7 @@ export function Preview() {
   const setTrustMode = useSettingsStore((s) => s.setTrustMode);
   const reloadToken = usePreviewStore((s) => s.reloadToken);
   const bumpReload = usePreviewStore((s) => s.bumpReload);
+  const overlayOpen = usePreviewStore((s) => s.overlayOpen);
 
   const showJsBlockedBanner =
     !!selectedFile && trustMode === "safe" && selectedFileHasScripts;
@@ -26,7 +27,9 @@ export function Preview() {
     if (!el) return;
     let raf = 0;
     const update = () => {
-      if (!selectedFile) {
+      // Collapse the native preview webview to nothing when there's no file,
+      // or while a DOM overlay (share popover) needs to render above it.
+      if (!selectedFile || overlayOpen) {
         void invoke("update_preview_bounds", {
           label: PREVIEW_LABEL,
           x: 0,
@@ -61,7 +64,7 @@ export function Preview() {
       ro.disconnect();
       window.removeEventListener("resize", schedule);
     };
-  }, [showJsBlockedBanner, selectedFile]);
+  }, [showJsBlockedBanner, selectedFile, overlayOpen]);
 
   useEffect(() => {
     if (!selectedFile) return;
